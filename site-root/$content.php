@@ -36,6 +36,12 @@ if ($pathType == 'tree') {
 }
 
 if ($pathType == 'blob') {
+    $extension = strtolower(substr(strrchr($pathRef, '.'), 1));
+
+    if ($extension && array_key_exists($extension, SiteFile::$extensionMIMETypes)) {
+        header('Content-Type: '.SiteFile::$extensionMIMETypes[$extension]);
+    }
+
     passthru("hab pkg exec core/git git --git-dir={$repository->getGitDir()} cat-file -p {$pathHash}");
     exit();
 }
