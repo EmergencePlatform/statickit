@@ -75,9 +75,9 @@ class BuildWorkflow
             $buildResult = static::build();
         } catch (Exception $e) {
             static::postChatMessage([
-                'text' => 'Build failed',
                 'attachments' => json_encode([
                     [
+                        'title' => 'Build failed',
                         'text' => $e->getMessage(),
                         'mrkdwn_in' => [],
                         'color' => 'danger'
@@ -92,10 +92,9 @@ class BuildWorkflow
         print "\n\nDone\n";
         $siteUrl = UrlUtil::buildAbsolute('/');
         static::postChatMessage([
-            'text' => 'Build complete',
             'attachments' => json_encode([
                 [
-                    'title' => "$siteUrl updated",
+                    'title' => "Updated build available: $siteUrl",
                     'title_link' => $siteUrl,
                     'text' => $buildResult['buildOutput'],
                     'mrkdwn_in' => [],
