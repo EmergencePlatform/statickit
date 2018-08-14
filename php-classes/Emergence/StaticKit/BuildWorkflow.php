@@ -84,6 +84,8 @@ class BuildWorkflow
                     ]
                 ])
             ]);
+
+            return;
         }
 
 
@@ -145,7 +147,7 @@ class BuildWorkflow
 
 
         // export source to head directory
-        $exportResult = exec("git --git-dir={$repository->getGitDir()} archive HEAD | tar x; echo \$?");
+        $exportResult = exec("hab pkg exec core/git git --git-dir={$repository->getGitDir()} archive HEAD | tar x; echo \$?");
         
         if ($exportResult != '0') {
             throw new Exception("Failed with exit code {$exportResult} to export HEAD to {$headPath}");
