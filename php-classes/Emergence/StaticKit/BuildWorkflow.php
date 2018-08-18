@@ -10,12 +10,13 @@ use Emergence_FS;
 use Emergence\Git\Source;
 use Emergence\Slack\API as SlackAPI;
 use Emergence\Util\Url as UrlUtil;
+use Emergence\Habitat\Environment as HabitatEnvironment;
 
 
 class BuildWorkflow
 {
     public static $source = 'content';
-    public static $command = 'hab pkg exec core/node npm run build';
+    public static $command = 'npm run build';
     public static $chatChannel;
 
     public static function getSource()
@@ -145,9 +146,22 @@ class BuildWorkflow
         chdir($headPath);
 
 
+        // initialize habitat environment
+        $habitatEnvironment = new HabitatEnvironment(
+            [
+                'core/git',
+                'core/node',
+                'core/libpng'
+            ],
+            [
+                'HOME' => $studioPath
+            ]
+        );
+
+
         // export source to head directory
-        $exportResult = exec("hab pkg exec core/git git --git-dir={$repository->getGitDir()} archive HEAD | tar x; echo \$?");
-        
+        $exportResult = $habitatEnvironment->exec('core/git', "git --git-dir={$repository->getGitDir()} archive HEAD | tar x; echo \$?");
+
         if ($exportResult != '0') {
             throw new Exception("Failed with exit code {$exportResult} to export HEAD to {$headPath}");
         }
@@ -162,19 +176,8 @@ class BuildWorkflow
         symlink($nodeModulesPath, "{$headPath}/node_modules");
 
 
-        // configure execution environment
-        putenv("HOME={$studioPath}");
-        putenv('LD_LIBRARY_PATH='.implode(':', [
-            trim(exec('hab pkg path core/libpng')) . '/lib'
-        ]));
-        putenv('PATH='.implode(':', [
-            trim(exec('hab pkg path core/node')) . '/bin',
-            '/bin'
-        ]));
-
-
         // run npm install
-        exec("hab pkg exec core/node npm install 2>&1", $npmOutput, $npmStatus);
+        $habitatEnvironment->exec('core/node', "npm install 2>&1", $npmOutput, $npmStatus);
         $npmOutput = implode(PHP_EOL, $npmOutput);
         $npmOutput = preg_replace('#\\x1b[[][^A-Za-z]*[A-Za-z]#', '', $npmOutput);
 
@@ -186,10 +189,10 @@ class BuildWorkflow
 
         // run build
         chdir("{$headPath}");
-        exec(static::$command.' 2>&1', $buildOutput, $buildStatus);
+        $habitatEnvironment->exec('core/node', static::$command.' 2>&1', $buildOutput, $buildStatus);
         $buildOutput = implode(PHP_EOL, $buildOutput);
         $buildOutput = preg_replace('#\\x1b[[][^A-Za-z]*[A-Za-z]#', '', $buildOutput);
-        
+
         if ($buildStatus !== 0) {
             throw new Exception("build failed with exit code {$buildStatus}:\n\n{$buildOutput}");
         }

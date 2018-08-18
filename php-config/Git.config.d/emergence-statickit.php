@@ -14,6 +14,10 @@ Git::$repositories['emergence-statickit'] = [
         'php-config/Git.config.d/content.php',
         'site-root/$content.php',
         'site-root/_notfound.php',
-        'site-root/home.php'
+        'site-root/home.php',
+
+        // TODO: merge upstream
+        'php-classes/Emergence/Git/Source.php',
+        'php-classes/Emergence/Habitat',
     ]
 ];
