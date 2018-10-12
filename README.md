@@ -34,6 +34,6 @@ echo 'Emergence\StaticKit\BuildWorkflow::run();' | sudo emergence-shell mysite-h
 
 1. Populate a random webhook secret string in `php-config/Emergence/GitHub/Connector.config.php`
 1. Configure a webhook for `push` events in GitHub or Gitea:
-  - **URL**: `http://example.org/connectors/github/webhooks`
-  - **Content type**: `application/json`
-  - **Secret**: *use from step 1*
+   - **URL**: `http://example.org/connectors/github/webhooks`
+   - **Content type**: `application/json`
+   - **Secret**: *use from step 1*
